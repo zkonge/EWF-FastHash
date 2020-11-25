@@ -199,11 +199,10 @@ def main():
         for i, block in enumerate(pool):
             with Timer('hash use', display=verbose):
                 hasher.update(block)
-            print(
-                (i * block_size + len(block)) // 1024 // 1024,
-                '/',
-                total_size,
-                'MiB processed')
+            print((i * block_size + len(block)) // 1024 // 1024,
+                  '/',
+                  total_size,
+                  'MiB processed')
 
     result = hasher.hexdigest()
 
