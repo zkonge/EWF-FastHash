@@ -1,2 +1,2 @@
-# E01-FastHash
-Fastest Expert Witness Compression Format (EWF) hash calculator
+# EWF-FastHash
+Fast Expert Witness Compression Format (EWF) hash calculator
