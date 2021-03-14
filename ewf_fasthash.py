@@ -107,7 +107,7 @@ class ReaderPool:
                     break
                 task.read_complete_event.wait()  # wait until read complete
 
-            task.buffer[:] = disk.read_random(task.size, task.offset)
+            task.buffer[:] = disk.read_buffer_at_offset(task.size, task.offset)
             task.write_complete_event.set()  # write complete
 
             queue.task_done()  # useless now
