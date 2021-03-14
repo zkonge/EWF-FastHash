@@ -4,21 +4,9 @@ Fast Expert Witness Compression Format (EWF) hash calculator
 ## Requirements
 
 1. Python 3.6+
-2. Any system supports `libewf`
+2. Any system supports `libewf-python`
 
-## Installation
-
-1. Windows
-
-    Provide prebuild wheels for `Python 3.8+`.
-    
-    Wheels download URL: https://github.com/zkonge/EWF-FastHash/releases
-
-2. Other Systems/Python versions
-
-    Compile Python extension from [`libewf`](https://github.com/libyal/libewf-legacy), 
-    You can get help from [`libewf-experimental-wiki`](https://github.com/libyal/libewf)
-
+Just run `pip install libewf-python`.
 
 ## Usage
 
