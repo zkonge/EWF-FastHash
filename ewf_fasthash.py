@@ -175,9 +175,9 @@ def main():
     parser.add_argument(
         "--block-size",
         type=int,
-        default=1024 * 1024 * 512,
+        default=1024 * 1024 * 256,
         help="Block size(byte) read from disk, larger means faster, "
-        "but cost more memory. (default: 536870912(512Mib))",
+        "but cost more memory. (default: 268435456(256MiB))",
     )
     parser.add_argument(
         "--parallelism",
