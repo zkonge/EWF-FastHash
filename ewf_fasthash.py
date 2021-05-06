@@ -1,6 +1,7 @@
 #
 # 此源代码的使用受 GNU GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
-# Use of this source code is governed by the GNU GPLv3 license that can be found through the following link.
+# Use of this source code is governed by the GNU GPLv3 license
+# that can be found through the following link.
 #
 # https://github.com/zkonge/EWF-FastHash/blob/master/LICENSE
 #
@@ -51,21 +52,25 @@ class ReaderPool:
     _thread_count: int
     _block_size: int
     _queue_size: int
-    _queue: 'Queue[Union[Task,None]]'  # Python3.9+, None means complete
+    _queue: "Queue[Union[Task,None]]"  # Python3.9+, None means complete
     _threads: List[Thread]
     _disk_size: int
     _verbose: bool
 
-    def __init__(self,
-                 ewf_path: Path,
-                 parallelism: int = 3,
-                 block_size: int = 1024 * 1024 * 512,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        ewf_path: Path,
+        parallelism: int = 3,
+        block_size: int = 1024 * 1024 * 512,
+        verbose: bool = False,
+    ):
         # backup for recovery
         current_dir = os.getcwd()
 
         if str(ewf_path) != ewf_path.name:
-            warnings.warn('pyewf can only handle file in current dir, current dir may change!')
+            warnings.warn(
+                "pyewf can only handle file in current dir, current dir may change!"
+            )
             os.chdir(ewf_path.absolute().parent)
             ewf_path = Path(ewf_path.name)
 
@@ -76,11 +81,7 @@ class ReaderPool:
         self._block_size = block_size
         self._queue_size = parallelism + 3
         self._queue = Queue(maxsize=self._queue_size)
-        self._threads = [
-            Thread(target=self.worker)
-            for _
-            in range(parallelism)
-        ]
+        self._threads = [Thread(target=self.worker) for _ in range(parallelism)]
         self._verbose = verbose
 
         disk: pyewf.handle
@@ -101,7 +102,7 @@ class ReaderPool:
         queue = self._queue
 
         while True:
-            with Timer(f'({current_thread().ident})Reading spends:', display=False):
+            with Timer(f"({current_thread().ident})Reading spends:", display=False):
                 task = queue.get()
                 if task is None:  # get None, exit
                     break
@@ -130,7 +131,7 @@ class ReaderPool:
                 offset += block_size
                 yield task
 
-        def producer(consumer_queue: 'Queue[Union[Task,None]]'):
+        def producer(consumer_queue: "Queue[Union[Task,None]]"):
             task_queue = self._queue
 
             for t in task_generator():
@@ -143,7 +144,9 @@ class ReaderPool:
                 consumer_queue.put(None)
 
         def consumer() -> Iterator:
-            consumer_queue = Queue(maxsize=self._queue_size)  # use maxsize to block task generator
+            consumer_queue = Queue(
+                maxsize=self._queue_size
+            )  # use maxsize to block task generator
 
             producer_thread = Thread(target=producer, args=(consumer_queue,))
             producer_thread.start()
@@ -161,25 +164,34 @@ class ReaderPool:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Fast EWF(E01) hash calculator')
-    parser.add_argument('name', help='EWF file name (1 name enough).')
-    parser.add_argument('--hash',
-                        default='md5',
-                        choices=sorted(hashlib.algorithms_available),
-                        help='Hash type you want to use. (default: md5)')
-    parser.add_argument('--block-size',
-                        type=int,
-                        default=1024 * 1024 * 512,
-                        help='Block size(byte) read from disk, larger means faster, '
-                             'but cost more memory. (default: 536870912(512Mib))')
-    parser.add_argument('--parallelism',
-                        type=int,
-                        default=3,
-                        help='Thread count, improve decompress performance, \n'
-                             'but large number have negative effect on read performance. (default: 3)')
-    parser.add_argument('-V', '--verbose',
-                        action='store_true',
-                        help='Show more information for debugging.')
+    parser = argparse.ArgumentParser(description="Fast EWF(E01) hash calculator")
+    parser.add_argument("name", help="EWF file name (1 name enough).")
+    parser.add_argument(
+        "--hash",
+        default="md5",
+        choices=sorted(hashlib.algorithms_available),
+        help="Hash type you want to use. (default: md5)",
+    )
+    parser.add_argument(
+        "--block-size",
+        type=int,
+        default=1024 * 1024 * 512,
+        help="Block size(byte) read from disk, larger means faster, "
+        "but cost more memory. (default: 536870912(512Mib))",
+    )
+    parser.add_argument(
+        "--parallelism",
+        type=int,
+        default=3,
+        help="Thread count, improve decompress performance, \n"
+        "but large number have negative effect on read performance. (default: 3)",
+    )
+    parser.add_argument(
+        "-V",
+        "--verbose",
+        action="store_true",
+        help="Show more information for debugging.",
+    )
 
     args = parser.parse_args()
 
@@ -191,32 +203,39 @@ def main():
 
     # Process data
 
-    pool = ReaderPool(ewf_path=ewf_path, parallelism=parallelism, block_size=block_size, verbose=verbose)
+    pool = ReaderPool(
+        ewf_path=ewf_path,
+        parallelism=parallelism,
+        block_size=block_size,
+        verbose=verbose,
+    )
     hasher = hashlib.new(hash_type)
 
     total_size = pool.disk_size // 1024 // 1024
-    with Timer('total time use'):
+    with Timer("total time use"):
         for i, block in enumerate(pool):
-            with Timer('hash use', display=verbose):
+            with Timer("hash use", display=verbose):
                 hasher.update(block)
-            print((i * block_size + len(block)) // 1024 // 1024,
-                  '/',
-                  total_size,
-                  'MiB processed')
+            print(
+                (i * block_size + len(block)) // 1024 // 1024,
+                "/",
+                total_size,
+                "MiB processed",
+            )
 
     result = hasher.hexdigest()
 
     # Print result
 
-    info = f'''
+    info = f"""
 {ewf_path} ({ewf_path.stat().st_size}Bytes)
 {datetime.now()}
 {args.hash}: {result}
-'''.strip()
+""".strip()
 
     print(info)
-    ewf_path.with_suffix('.hash').write_text(info)
+    ewf_path.with_suffix(".hash").write_text(info)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
